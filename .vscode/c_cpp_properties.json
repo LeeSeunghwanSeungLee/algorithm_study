@@ -10,6 +10,16 @@
                 "UNICODE",
                 "_UNICODE"
             ],
+            "browse": {
+                "path": [
+                    "C://MinGW/lib/gcc/mingw32/6.3.0/include",
+                    "C://MinGW/lib/gcc/mingw32/6.3.0/include-fixed",
+                    "C://MinGW/include/*",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
             "windowsSdkVersion": "10.0.18362.0",
             "compilerPath": "C:/MinGW/bin/g++.exe",
             "cStandard": "c17",
