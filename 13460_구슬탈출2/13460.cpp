@@ -1,128 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <algorithm>
+#include <math.h>
 #include <iostream>
-#include <string>
-#include <vector>
 #include <queue>
+#include <string>
 
 using namespace std;
 
-//전역변수
-int N, M, ans;
-vector<string> graph;
-queue<pair<pair<int, int>, pair<int, int>>> ans_list; // red 위치, blue 위치
-pair<int, int> red, blue, target;
-//함수
-void pre_Process(){
-    ios::sync_with_stdio(false);
-    cin.tie(NULL);
-    cout.tie(NULL); 
+#define MAX 11
+
+int N, M;
+char arr[MAX][MAX];
+bool visit[MAX][MAX][MAX][MAX] = { false };
+int dx[4] = { 0, 0, -1, 1 };
+int dy[4] = { 1, -1, 0 ,0 };
+int red_x, red_y, blue_x, blue_y;
+
+int BFS() {
+	queue <pair<pair<int, int>, pair<int, int>>> que;
+	que.push(make_pair(make_pair(red_x, red_y), make_pair(blue_x, blue_y)));
+	visit[red_x][red_y][blue_x][blue_y] = true;
+	int result = 0;
+
+	while (!que.empty()) {
+		int size = que.size();
+		while (size--) {
+			int redball_x = que.front().first.first;
+			int redball_y = que.front().first.second;
+			int blueball_x = que.front().second.first;
+			int blueball_y = que.front().second.second;
+
+			que.pop();
+			if (arr[redball_x][redball_y] == 'O' && arr[redball_x][redball_y] != arr[blueball_x][blueball_y]) {
+				return result;
+			}
+
+			for (int i = 0; i < 4; i++) {
+				int red_nx = redball_x, red_ny = redball_y, blue_nx = blueball_x, blue_ny = blueball_y;
+				while (arr[red_nx + dx[i]][red_ny + dy[i]] != '#' && arr[red_nx][red_ny] != 'O') {
+					red_nx += dx[i];
+					red_ny += dy[i];
+				}
+				while (arr[blue_nx + dx[i]][blue_ny + dy[i]] != '#' && arr[blue_nx][blue_ny] != 'O') {
+					blue_nx += dx[i];
+					blue_ny += dy[i];
+				}
+				if (red_nx == blue_nx && red_ny == blue_ny) {
+					if (arr[red_nx][blue_ny] == 'O') continue;
+					if (abs(red_nx - redball_x) + abs(red_ny - redball_y) < abs(blue_nx - blueball_x) + abs(blue_ny - blueball_y)) {
+						blue_nx -= dx[i];
+						blue_ny -= dy[i];
+					}
+					else {
+						red_nx -= dx[i];
+						red_ny -= dy[i];
+					}
+				}
+				if (visit[red_nx][red_ny][blue_nx][blue_ny]) continue;
+				que.push(make_pair(make_pair(red_nx, red_ny), make_pair(blue_nx, blue_ny)));
+				visit[red_nx][red_ny][blue_nx][blue_ny] = true;
+			}
+		}
+		if (result == 10) return -1;
+		result++;
+	}
+	return -1;
 }
 
-void init(){
-    cin >> N >> M;
-    for(int i = 0; i < N; i++){
-        string temp;
-        cin >> temp;
-        graph.push_back(temp);  
-    }
-
-    for(int i = 0; i < N; i++){ // 맨 처음 위치 결정
-        for(int j = 0; j < M; j++){
-            if(graph[i][j] == 'R') red = make_pair(i, j);
-            else if(graph[i][j] == 'B') blue = make_pair(i, j);
-            else if(graph[i][j] = 'O') target = make_pair(i, j);
-            else continue;
-        }
-    }
+void init() {
+	ios::sync_with_stdio(false);
+	cin.tie(0); cout.tie(0);
 }
 
-void test(){
-    for(int i = 0; i < N; i++){
-        for(int j = 0; j < M; j++){
-            cout << graph[i][j] << ' ';
-        }
-        cout << '\n';
-    }
-}
-
-pair<int, int> move(int dir, int start_row, int start_col){
-
-    int now_row = start_row;
-    int now_col = start_col;
-    int ans_row = -1;
-    int ans_col = -1;
-
-    switch(dir){
-        case 0:
-            //left
-            for(int i = 0; i < M; i++){
-                if(graph[start_row][start_col - 1] == '.') now_col = start_col - 1;
-                else if(graph[start_row][start_col - 1] == 'O') ans_col = start_col - 1;
-                else break;
-            }
-            break;
-        case 1:
-            //right
-            for(int i = 0; i < M; i++){
-                if(graph[start_row][start_col + 1] == '.') now_col = start_col + 1;
-                else if(graph[start_row][start_col + 1] == 'O') ans_col = start_col + 1;
-                else break;
-            }
-            break;
-        case 2:
-            //up
-            for(int i = 0; i < M; i++){
-                if(graph[start_row - 1][start_col] == '.') now_row = start_row - 1;
-                else if(graph[start_row - 1][start_col == 'O') ans_row = start_row - 1;
-                else break;
-            }
-            break;
-        case 3:
-            //down
-            for(int i = 0; i < M; i++){
-                if(graph[start_row + 1][start_col] == '.') now_row = start_row + 1;
-                else if(graph[start_row + 1][start_col == 'O') ans_row = start_row + 1;
-                else break;
-            }
-            break;
-        default:
-            break;
-    }
-    if(ans_row != -1) return make_pair(ans_row, start_col);
-    else if(ans_col != -1) return make_pair(start_row, ans_col);
-
-    return make_pair(now_row, now_col);
-}
-
-void check(){
-    //
-}
-
-void BFS(int first_direction){
-    //첫번째 방향 이동해서 좌표를 따온다 - function : move
-    //통과 여부 확인 - function : check
-        //첫 이동 좌표를 큐에 담는다
-
-    while(!ans_list.empty()){//비어있지 않으면
-        pair<pair<int, int>, pair<int, int>> now_position = ans_list.front();
-        ans_list.pop();
-        for(int i = 0; i < 4; i++){//4가지 방향
-            //방향이동하고 판단한다 - function : move
-            //통과여부 확인? - function : check
-                //큐에 담는다
-        }
-    } 
-}
-
-int main(void){
-    pre_Process();
+int main() {
     init();
-    // act
-    for(int i = 0; i < 4; i++){//4가지 방향에 따라서
+	void();
+	cin >> N >> M;
 
-    }
-    
-
-
-    //end act
-    return 0;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++) {
+			cin >> arr[i][j];
+			if (arr[i][j] == 'R') {
+				red_x = i; red_y = j;
+			}
+			else if (arr[i][j] == 'B') {
+				blue_x = i; blue_y = j;
+			}
+		}
+	}
+	cout << BFS();
+	return 0;
 }
