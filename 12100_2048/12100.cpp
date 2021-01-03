@@ -1,127 +1,179 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-
-
-
+#include<iostream>
+#include<queue>
 using namespace std;
-
-
-int N;
-int arr[20][20] = {0};
-vector<int> ans;
-int temp_arr[20][20] = {0};
-
-void draw_temp_arr(){
-    for(int i = 0; i < N; i++){
-        for(int j = 0; j < N; j++){
-            temp_arr[i][j] = arr[i][j];           
-        }
-    }
-}
-
-void swap_temp_arr(int row_1, int col_1, int row_2, int col_2){
-    int temp = temp_arr[row_1][col_1];
-    temp_arr[row_1][col_1] = temp_arr[row_2][col_2];
-    temp_arr[row_2][col_2] = temp;
-}
-
-void plus_temp_arr(int row_1, int col_1, int row_2, int col_2){
-    temp_arr[row_1][col_1] += temp_arr[row_2][col_2];
-    temp_arr[row_2][col_2] = 0;
-}
-
-void move_temp(int dir){ 
-    switch (dir)
+ 
+int N, ans;
+int board[21][21];
+ 
+// 가장 큰 값을 찾아내는 함수
+int findmaxvalue()
+{
+    int val = 0;
+    for (int i = 0; i < N; i++)
     {
-    case 0://상
-        for(int i = N - 1; i > 0; i--){
-            for(int j = 0; j < N; j++){
-                if(temp_arr[i - 1][j] == 0 && temp_arr[i][j] != 0) swap_temp_arr(i - 1, j, i, j);
-                else if(temp_arr[i - 1][j] == temp_arr[i][j] && temp_arr[i][j] != 0) plus_temp_arr(i - 1, j, i, j);
-            }
-        }
-        break;
-    case 1://하
-        for(int i = 0; i < N - 1; i++){
-            for(int j = 0; j < N; j++){
-                if(temp_arr[i + 1][j] == 0 && temp_arr[i][j] != 0) swap_temp_arr(i + 1, j, i, j);
-                else if(temp_arr[i + 1][j] == temp_arr[i][j] && temp_arr[i][j] != 0) plus_temp_arr(i + 1, j, i, j);
-            }
-        }
-        break;
-    case 2://좌
-        for(int j = N - 1; j > 0; j--){
-            for(int i = 0; i < N; i++){
-                if(temp_arr[i][j - 1] == 0 && temp_arr[i][j] != 0) swap_temp_arr(i, j - 1, i, j);
-                else if(temp_arr[i][j - 1] == temp_arr[i][j] && temp_arr[i][j] != 0) plus_temp_arr(i, j - 1, i, j);
-            }
-        }
-        break;
-    case 3://우
-        for(int j = 0; j < N - 1; j++){
-            for(int i = 0; i < N; i++){
-                if(temp_arr[i][j + 1] == 0 && temp_arr[i][j] != 0) swap_temp_arr(i, j + 1, i, j);
-                else if(temp_arr[i][j + 1] == temp_arr[i][j] && temp_arr[i][j] != 0) plus_temp_arr(i, j + 1, i, j);
-            }
-        }
-        break;
-    
-    default:
-        break;
-    }
-}
-
-int find_max(){
-    int max = 0;
-    for(int i = 0; i < N; i++){
-        for(int j = 0; j < N; j++){
-            if(max < temp_arr[i][j]) max = temp_arr[i][j];
+        for (int j = 0; j < N; j++)
+        {
+            if (board[i][j] > val) val = board[i][j];
         }
     }
-    return max;
+    return val;
 }
-
-void DFS(int depth, int pre_dir){
-    if(depth > 4) {
-        int temp_ans = find_max();
-        ans.push_back(temp_ans);
+// 배열의 값을 복사하는 함수
+void copy_arr(int (*temp)[21], int (*board)[21])
+{
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            *(temp[i]+j) = *(board[i]+j);
+        }
+    }
+    return;
+}
+// 4방향을 탐색하는 함수
+void direct(int dir)
+{
+    queue<int> q; // board의 값을 넣을 queue
+ 
+    if (dir == 0) // UP
+    {
+        for (int j = 0; j < N; j++)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                if (board[i][j]) {
+                    // 0 이 아니면 값을 queue에 넣고 board의 값을 0 으로 채운다.
+                    q.push(board[i][j]);
+                    board[i][j] = 0;
+                }
+            }
+ 
+            int idx = 0;
+            // 모든 값을 빼내면서
+            while (!q.empty())
+            {
+                int val = q.front();
+                q.pop();
+ 
+                // board의 값이 0 이면 그 자리에 queue에 넣었던 값을 넣는다.
+                if (!board[idx][j]) board[idx][j] = val;
+                // board의 값이 queue의 값과 같다면 두 값을 합쳐 넣고 위치를 한 칸 이동시킨다.
+                else if (board[idx][j] == val) board[idx++][j] += val;
+                // board의 값이 queue의 값과 다르다면 다음 위치로 한 칸 이동시켜 값을 넣는다.
+                else if (board[idx][j]) board[++idx][j] = val;
+            }
+        }
+    }
+    else if (dir == 1) // DOWN
+    {
+        for (int j = 0; j < N; j++)
+        {
+            for (int i = N-1; i >= 0; i--)
+            {
+                if (board[i][j]) {
+                    q.push(board[i][j]);
+                    board[i][j] = 0;
+                }
+            }
+ 
+            int idx = N-1;
+            while (!q.empty())
+            {
+                int val = q.front();
+                q.pop();
+ 
+                if (!board[idx][j]) board[idx][j] = val;
+                else if (board[idx][j] == val) board[idx--][j] += val;
+                else if (board[idx][j]) board[--idx][j] = val;
+            }
+        }
+    }
+    else if (dir == 2) // LEFT
+    {
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                if (board[i][j]) {
+                    q.push(board[i][j]);
+                    board[i][j] = 0;
+                }
+            }
+ 
+            int idx = 0;
+            while (!q.empty())
+            {
+                int val = q.front();
+                q.pop();
+ 
+                if (!board[i][idx]) board[i][idx] = val;
+                else if (board[i][idx] == val) board[i][idx++] += val;
+                else if (board[i][idx]) board[i][++idx] = val;
+            }
+        }
+    }
+    else if (dir == 3) // RIGHT
+    {
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = N-1; j >= 0; j--)
+            {
+                if (board[i][j]) {
+                    q.push(board[i][j]);
+                    board[i][j] = 0;
+                }
+            }
+ 
+            int idx = N-1;
+            while (!q.empty())
+            {
+                int val = q.front();
+                q.pop();
+ 
+                if (!board[i][idx]) board[i][idx] = val;
+                else if (board[i][idx] == val) board[i][idx--] += val;
+                else if (board[i][idx]) board[i][--idx] = val;
+            }
+        }
+    }
+}
+void dfs(int _cnt)
+{
+    if (_cnt == 5) {
+        int local_ans = findmaxvalue();
+        if (local_ans > ans) ans = local_ans;
         return;
     }
     
-
-
-    for(int i = 0; i < 4; i++){
-        //액션을 취해서 temp 를 변형시킨다
-        if(depth == 0) draw_temp_arr();
-        if(i == pre_dir) continue; // 이전과 같은 방향으로는 될 수 없다
-        move_temp(i);
-        DFS(depth + 1, i);
-        
+    int temp[21][21] = { 0 };
+    copy_arr(temp, board);
+ 
+    for (int i = 0; i < 4; i++)
+    {
+        direct(i);
+        dfs(_cnt+1);
+        copy_arr(board, temp);
     }
-    
+    return;
 }
-
-int main(void){
+ 
+int main()
+{
+    int cnt = 0;
+ 
     cin >> N;
-    for(int i = 0; i < N; i++){ // 그래프 그리기
-        for(int j = 0; j < N; j++){
-            cin >> arr[i][j];
+ 
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            cin >> board[i][j];
         }
     }
-    DFS(0, -1);
-    sort(ans.begin(), ans.end());
-    cout << ans[ans.size() - 1];
-
-    
+ 
+    dfs(cnt);
+ 
+    cout << ans;
+ 
     return 0;
 }
-
-
-//수정사항
-
-// 순서가 잘못된거같음
-// 상의경우
-// 1 행 부터 위로 쭉
-// 2행부터 위로쭊
-// 3행부터 위로 쭊 형태로 변경해야한다
