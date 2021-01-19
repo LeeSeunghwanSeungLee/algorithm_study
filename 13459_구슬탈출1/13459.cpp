@@ -1,62 +1,82 @@
+
 #include <iostream>
-#include <vector>
 #include <queue>
-#include <cstring>
-#include <tuple>
 
-//DFS를 이용한다
 using namespace std;
-char GRAPH[10][10];
-bool CHECK[10][10][2];
-pair<int, int> RED;
-pair<int, int> BLUE;
-int d_r[] = {-1, 0, 1, 0};
-int d_c[] = {0, 1, 0, -1};
 
-bool move(int dir){
-    if(dir == 0){ // 북
+struct bead {
+	int rx, ry, bx, by, d;
+};
 
-    }
-    else if(dir == 1){ // 동
+int m = 0, n = 0;
+char map[10][10];
+bool check[10][10][10][10];
+queue<bead> q;
+const int dx[] = { -1, 0, 1, 0 }, dy[] = { 0, -1, 0, 1 };
 
-    }
-    else if(dir == 2){ // 남
-
-    }
-    else{ // 서
-
-    }
+void move(int& x, int& y, int& c, int dx, int dy) {
+	while (map[x][y] != 'O' && map[x + dx][y + dy] != '#') {
+		x += dx;
+		y += dy;
+		c++;
+	}
 }
-int main(void){
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL); cout.tie(NULL);
 
-    int width, height;
-    cin >> height >> width;
-    for(int i = 0; i < height; i++){
-        char temp[11];
-        for(int j = 0; j < width; j++){
-            cin >> temp[j];
-            if(temp[j] == 'R') {
-                RED = make_pair(i, j);
-                GRAPH[i][j] = '.';
-            }
-            else if(temp[j] == 'B') {
-                BLUE = make_pair(i, j);
-                GRAPH[i][j] = '.';
-            }
-            else if(temp[j] == '#') {
-                CHECK[i][j][0] = true;
-                CHECK[i][j][0] = true;
-                GRAPH[i][j] = '#';
-            }
-            else GRAPH[i][j] = temp[j];;
-        }
-    }
+void bfs() {
+	while (!q.empty()) {
+		int rx = q.front().rx;
+		int ry = q.front().ry;
+		int bx = q.front().bx;
+		int by = q.front().by;
+		int d = q.front().d;
 
-    //BFS
+		q.pop();
 
+		if (d >= 10) break;
 
-    
-    return 0;
+		for (int i = 0; i < 4; i++) {
+			int nrx = rx, nry = ry, nbx = bx, nby = by, nd = d + 1;
+			int rc = 0, bc = 0;
+
+			move(nrx, nry, rc, dx[i], dy[i]);
+			move(nbx, nby, bc, dx[i], dy[i]);
+
+			if (map[nbx][nby] == 'O') continue;
+			if (map[nrx][nry] == 'O') {
+				cout << 1;
+				return;
+			}
+
+			if (nrx == nbx && nry == nby) {
+				if (rc > bc) nrx -= dx[i], nry -= dy[i];
+				else nbx -= dx[i], nby -= dy[i];
+			}
+
+			if (check[nrx][nry][nbx][nby]) continue;
+			check[nrx][nry][nbx][nby] = true;
+			q.push({ nrx, nry, nbx, nby, nd });
+		}
+	}
+	cout << 0;
+}
+
+int main() {
+	int rx = 0, ry = 0, bx = 0, by = 0;
+
+	scanf("%d %d", &n, &m);
+
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			scanf("%1s", &map[i][j]);
+
+			if (map[i][j] == 'R') rx = i, ry = j;
+			else if (map[i][j] == 'B') bx = i, by = j;
+		}
+	}
+
+	check[rx][ry][bx][by] = true;
+	q.push({ rx, ry, bx, by, 0 });
+	bfs();
+
+	return 0;
 }
