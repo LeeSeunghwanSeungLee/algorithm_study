@@ -3,6 +3,7 @@
 #include <tuple>
 #include <cstring>
 #include <queue>
+#include <algorithm>
 
 #define MAX 20
 using namespace std;
