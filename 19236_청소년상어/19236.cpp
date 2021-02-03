@@ -1,87 +1,60 @@
-// https://www.acmicpc.net/problem/19236
 #include <iostream>
-#include <algorithm>
 #include <vector>
-
 using namespace std;
-struct FISH{
-    bool is_fish  = true;
-    int row;
-    int col;
-    int self_points;
-    int dir;
-};
+
+int GRAPH[4][4][16];
+int GRAPH_DIR[4][4][16];
+
 struct SHARK{
     int row;
     int col;
     int points;
-    int dir;
 };
-FISH GRAPH[4][4][17];
-vector<SHARK> CHECK_SHARK;
+SHARK NOW;
+
+bool CHECK[4][4]; 
+
+int d_r[] = {0, -1, -1, 0, 1, 1, 1, 0, -1};
+int d_c[] = {0, 0, -1, -1, -1, 0, 1, 1, 1};
 vector<int> ANS;
-int d_r[] = {-1, -1, 0, 1, 1, 1, 0, -1};
-int d_c[] = {0, -1, -1, -1, 0, 1, 1, 1};
 
-bool cmp(FISH &a, FISH &b){
-    return a.self_points < b.self_points;
-}
-
-void swap(int row, int col, int depth, int dir){
-    int new_dir = dir;
-    int target_row = row + d_r[new_dir];
-    int target_col = col + d_c[new_dir];
-    
-    //만일 벽에 나가거나 상어의 위치와 동일하면 new_dir = (new_dir + 1) % 8 을 적용
-    //꾸준히 회전했는대 new_dir == dir 가되면 이동 불가 //  그대로 그래프에 저장하고, return;
-
-    GRAPH[target_row][target_col][depth + 1] = GRAPH[row][col][depth];
-    GRAPH[row][col][depth + 1] = GRAPH[target_row][target_col][depth];
-}
-
-void DFS(int depth){
-    if(depth >= 16){
-        sort(ANS.begin(), ANS.end());
-        cout << ANS[ANS.size() - 1];
-        return;
-    }
-
-    vector<FISH> temp_fish;
+void reset(int depth){
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
-            if(GRAPH[i][j][depth].is_fish == true){
-                temp_fish.push_back(GRAPH[i][j][depth]);
-            }
+            GRAPH[i][j][depth] = 0;
+            GRAPH_DIR[i][j][depth] = 0;
         }
     }
-    sort(temp_fish.begin(), temp_fish.end(), cmp);
-    for(int i = 0; i < temp_fish.size(); i++){
-        int now_row = temp_fish[i].row, now_col = temp_fish[i].col, now_dir = temp_fish[i].dir;
-        swap(now_row, now_col, depth,  now_dir);
-    }
-
-
-    //상어의 방향에 맞춰서 가능한 방향으로 DFS 시킨다.
-        //빈칸이거나 밖으로 나가면 컨티뉴
-        //상어의 포인트를 더한다
-        //현재 상어의 상태를 벡터에 저장한다
-        //DFS(depth + 1)
-        //벡터에서 현재 상어의 상태를 퇴출시킨다
 }
+void DFS(int depth){
+    //만일 depth가 15회 이상이면 ANS를 소팅하고, 가장 큰 값을 출력한다
 
+    //현재 depth 에서 reset함수를 실행한다
+    //물고기를 회전시킨다
+
+    //for(int i = 0; i < 4; i++)반복문 실행
+        //int now_row, now_col, next_row, next_col을 설정한다
+        //만일 상어의 위치가 틀을 벗어나면 반복문을 그냥 중지시켜버린다
+        //만일 CHECK에서 이미 지나갓던 장소라면 continue시켜버린다
+        //NOW를 업데이트한다
+        //CHECK를 true로 변경한다
+        //DFS(depth + 1)
+        //NOW를 기존 형태로 바꾼다
+        //CHECK를 false 로 변경한다
+    //
+}
 int main(void){
     ios_base::sync_with_stdio(false);
     cin.tie(NULL); cout.tie(NULL);
 
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
-            int tmp_point, tmp_dir;
-            cin >> tmp_point >> tmp_dir;
-            GRAPH[i][j][0].row = i, GRAPH[i][j][0].col = j, GRAPH[i][j][0].self_points = tmp_point, GRAPH[i][j][0].dir = tmp_dir;
+            cin >> GRAPH[i][j][0] >> GRAPH_DIR[i][j][0];
         }
     }
 
-    //샤크의 현재 위치 (0, 0) 와 점수(0) 을 저장한다
+    //가장 처음 0, 0 을 샤크가 먹는다 -> 0회차
 
-    // DFS 를 진행한다?
+    //DFS(1) 을 실행한다
+    return 0;
 }
