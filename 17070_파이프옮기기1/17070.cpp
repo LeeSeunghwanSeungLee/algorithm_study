@@ -2,7 +2,6 @@
 using namespace std;
 int SIZE;
 int GRAPH[17][17];
-bool DP[17][17][2]; // 추후DP를 위함임
 int d_r[] = {0, 1, 1};
 int d_c[] = {1, 1, 0};
 int ANS(0);
