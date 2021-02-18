@@ -1,72 +1,65 @@
 #include <iostream>
-#include <queue>
 #include <vector>
-#include <algorithm>
-#define MAX 987654321
+#include <queue>
+
+#define INF 10e8
 
 using namespace std;
 
-int V, E, N_1, N_2;
-vector<vector<pair<int, int>>> GRAPH;
-int ANS(MAX);
+int n, e, answer;
+int a, b, c;
+int v1, v2;
+vector<pair<int,int>> nodes[801];
 
-bool cmp(pair<int, int> a, pair<int, int> b){
-    if(a.first != b.first) return a.first < b.first;
-    return a.second < b.second;
-}
-void init(){
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL); cout.tie(NULL);
+int dijkstra(int start, int end)                            // 시작점과 끝점이 주어졌을 때 다익스트라로 최단거리 반환
+{
+    int ret = -1;
+    vector<int> visited(n+1, INF);                          // visited 배열은 각 인덱스(노드)의 최단거리 저장, INF 로 초기화
 
-    cin >> V >> E;
-    for(int i = 0; i <= V; i++){
-        vector<pair<int, int>> temp(1, make_pair(0, 0));
-        GRAPH.push_back(temp);
-    }
-    for(int i = 0; i < E; i++){
-        int temp_1, temp_2, temp_dis;
-        cin >> temp_1 >> temp_2 >> temp_dis;
-        GRAPH[temp_1].push_back(make_pair(temp_dis, temp_2));
-        GRAPH[temp_2].push_back(make_pair(temp_dis, temp_1));
-    }
-    for(int i = 1; i <= V; i++){
-        sort(GRAPH[i].begin(), GRAPH[i].end(), cmp); 
-    }
-    cin >> N_1 >> N_2;
-}
+    priority_queue<pair<int,int>> pq;
+    pq.push(pair<int,int>(0, start));                       // start 부터 시작
+    visited[start] = 0;
 
-void solve(){
-    priority_queue<pair<pair<int, int>, pair<int, int>>> pq;
-    pq.push(make_pair(make_pair(0, 1), make_pair(0, 0)));
-    while(!pq.empty()){
-        pair<pair<int, int>, pair<int, int>> now = pq.top();
-        int total_dist = now.first.first, now_node = now.first.second;
-        int check_N_1 = now.second.first, check_N_2 = now.second.second;
+    while(pq.size())
+    {
+        int pos = pq.top().second;                          // 이번 노드를 꺼내서 확인
+        int dist = -pq.top().first;
         pq.pop();
-        //정답지확인
-        if(check_N_1 != 0 && check_N_2 != 0 && now_node == V) {
-            ANS = min(ANS, total_dist);
-            continue;
-        }
-        if(total_dist > ANS) continue;
-        if(check_N_1 >= 3 || check_N_2 >= 3) continue;
-        if(now_node == N_1) check_N_1++;
-        else if(now_node == N_2) check_N_2++;
-        for(int i = 1; i < GRAPH[now_node].size(); i++){
-            int next_node = GRAPH[now_node][i].second, next_dist = GRAPH[now_node][i].first + total_dist;
-            if(next_dist > ANS) continue;
-            pq.push(make_pair(make_pair(next_dist, next_node), make_pair(check_N_1, check_N_2)));
+
+        for(int i = 0 ; i < nodes[pos].size() ; i++)        // 노드에 연결되어있는 다른 노드들 모두 확인하는데
+        {
+            int nextPos = nodes[pos][i].second;
+            int nextDist = nodes[pos][i].first;
+            
+            if(dist + nextDist < visited[nextPos])          // 최단거리 갱신이 가능한 노드들만 집어넣음
+            {
+                visited[nextPos] = dist + nextDist;         // 업데이트 해주고 큐에 푸시함
+                pq.push(pair<int,int>(-(dist + nextDist), nextPos));
+            }
         }
     }
+
+    return (visited[end] == INF ? -1 : visited[end]);
 }
 
+int main()
+{
+    cin.tie(0);
+    ios_base::sync_with_stdio(0);
 
-int main(void){
-    init();
-    solve();
-    cout << '3' << '\n';
-    if(ANS == MAX) cout << -1;
-    else cout << ANS;
+    cin >> n >> e;
+    for(int i = 0 ; i < e ; i++)
+    {
+        cin >> a >> b >> c;
+        nodes[a].push_back(pair<int,int>(c, b));                        // 간선 연결 (양방향)
+        nodes[b].push_back(pair<int,int>(c, a));
+    }
+    cin >> v1 >> v2;
 
-    return 0;
+    int a1 = dijkstra(1, v1) + dijkstra(v1, v2) + dijkstra(v2, n);      // 1 ~ v1 ~ v2 ~ n 까지의 최단거리
+    int a2 = dijkstra(1, v2) + dijkstra(v2, v1) + dijkstra(v1, n);      // 1 ~ v2 ~ v1 ~ n 까지의 최단거리
+    answer = min(a1, a2);
+    if (answer == - 3) answer = -1;                                     // 둘 중 작은 값을 택한다
+
+    cout << answer << endl;
 }
