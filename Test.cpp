@@ -1,70 +1,53 @@
 #include <iostream>
-#include <queue>
 #include <vector>
 #include <algorithm>
+#include <math.h>
 #define MAX 987654321
 
 using namespace std;
 
-int V, E, N_1, N_2;
-vector<vector<pair<int, int>>> GRAPH;
-vector<int> PARENTS;
+int TEST_CASE;
+int SIZE;
+int GRAPH[13][13];
+bool CHECK[13][13];
+vector<pair<int, int>> PROCESSOR_LIST;
 int ANS(MAX);
 
+int d_r[] = {-1, 0, 1, 0};
+int d_c[] = {0, 1, 0, -1};
+void DFS(int depth, int core, int temp_ans){
+    //만일 최종지점에 도달했으면 vector.pushback 이후 리턴한다
+    for(int i = 0; i < 4; i++){
+        //현재 위치 표현
+        //i 에 해당하는 방향으로 가장자리까지 true 가 없는 지 확인.. 있다면 DFS(depth + 1, core, temp_ans);
+        //전부 체크하고 길이를 측정(len)
+        //DFS(depth + 1, core + 1, temp_ans + len);
+        //전부 체크 해제한다
+    } 
+}
 
-void init(){
+int main(void){
     ios_base::sync_with_stdio(false);
     cin.tie(NULL); cout.tie(NULL);
 
-    cin >> V >> E;
-    for(int i = 0; i <= V; i++){
-        vector<pair<int, int>> temp(1, make_pair(0, 0));
-        GRAPH.push_back(temp);
-        PARENTS[i] = i; 
-    }
-    for(int i = 0; i < E; i++){
-        int temp_1, temp_2, temp_dis;
-        cin >> temp_1 >> temp_2 >> temp_dis;
-        GRAPH[temp_1].push_back(make_pair(temp_dis, temp_2));
-        GRAPH[temp_2].push_back(make_pair(temp_dis, temp_1));
-    }
-    for(int i = 1; i <= V; i++){
-        sort(GRAPH[i].begin(), GRAPH[i].end()); 
-    }
-    cin >> N_1 >> N_2;
-}
+    cin >> TEST_CASE;
+    for(int tc = 1; tc <= TEST_CASE; tc++){
+        
+        cin >> SIZE;
 
-void solve(){
-    priority_queue<pair<pair<int, int>, pair<bool, bool>>> pq;
-    pq.push(make_pair(make_pair(0, 1), make_pair(0, 0)));
-    while(!pq.empty()){
-        pair<pair<int, int>, pair<bool, bool>> now = pq.top();
-        int total_dist = now.first.first, now_node = now.first.second;
-        bool check_N_1 = now.second.first, check_N_2 = now.second.second;
-        pq.pop();
-        //정답지확인
-        if(check_N_1 == true && check_N_2 == true && now_node == V) {
-            ANS = min(ANS, total_dist);
-            continue;
+        for(int i = 0; i < SIZE; i++){
+            for(int j = 0; j < SIZE; j++){
+                cin >> GRAPH[i][j];
+                if(GRAPH[i][j] == 1) {
+                    CHECK[i][j] = true;
+                    if(i != 0 && i != SIZE -1 && j != 0 && j != SIZE - 1) PROCESSOR_LIST.push_back(make_pair(i, j));                    
+                }
+            }
         }
-        if(total_dist > ANS) continue;
-        if(now_node == N_1) check_N_1 = true;
-        else if(now_node == N_2) check_N_2 = true;
-        for(int i = 1; i < GRAPH[now_node].size(); i++){
-            int next_node = GRAPH[now_node][i].second, next_dist = GRAPH[now_node][i].first + total_dist;
-            if(next_dist > ANS) continue;
-            pq.push(make_pair(make_pair(next_dist, next_node), make_pair(check_N_1, check_N_2)));
-        }
+        DFS(0, 0, 0);
+        //소팅한다
+        cout << '#' << tc << ' ' << ANS << '\n';
     }
-}
 
-
-int main(void){
-    init();
-    cout << '2' << '\n';
-    // solve();
-    // cout << '3' << '\n';
-    // if(ANS == MAX) cout << -1;
-    // else cout << ANS;
     return 0;
 }
