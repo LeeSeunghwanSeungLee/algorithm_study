@@ -2,35 +2,24 @@
 
 using namespace std;
 
-typedef struct Stack{
-    int data[110];
-    int len = 0;
-    int capacity = 0;
 
-    void create(int x){
-        capacity = x;
-    }
+template<typename T>
+struct Node{
+    T value;
+    Node<T>* next = nullptr;
+};
 
-    void push(int x){
-        if(len >= capacity) cout << "overflow" <<'\n';
+template <typename T> 
+class Stack 
+{ 
+private: 
+    Node<T>* head; 
+    Node<T>* tail; 
+public: Stack() :head(nullptr), tail(nullptr) {} 
+~Stack() { } 
+void Push(T value); 
+T Pop(); 
+bool isEmpty(); 
+T Top(); 
+};
 
-        else{
-            data[len++] = x; // 현재 위치에 넣고, len++ 실행
-        }
-    }
-
-    void pop(){
-        if(len <= 0) cout << "underflow" << '\n';
-        else {
-            data[len--] = 0;
-        }
-    }
-
-    int top(){
-        if(len <= 0) cout << "null" << '\n';
-        else{
-            return data[len--];
-        }
-    }
-
-} stack;
