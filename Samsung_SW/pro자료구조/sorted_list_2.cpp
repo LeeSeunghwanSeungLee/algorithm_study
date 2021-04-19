@@ -1,4 +1,4 @@
-#define MAX_NODE 1000001
+#define MAX_NODE 1000001 // 확인이 필요함
 #define BUCKET 1000
 #define rint register int
 #define NULL 0
