@@ -1,123 +1,140 @@
-#define MAX_SIZE 100001
-#define MAX_LEN 10
-
-
-typedef unsigned long long ull;
-
-ull getHash(char str[]){
-    int c = 0;
-    ull result = 0;
-    while(str[c]){
-        result = (result << 5) | (str[c] - 'a' + 1);
-        c++;
-    }
-    return (result << 5) * (MAX_LEN - c);
-}
-
-struct Node{
+#define NULL 0
+#define MAX_N 100010
+#define MAX_KEY 11
+#define ULL unsigned long long
+ 
+struct NODE {
     int idx;
-    ull hash;
+    ULL name;
 };
-
-Node* HEAP[MAX_SIZE];
-Node HEAP_POOL[MAX_SIZE];
-int heapsize = 0;
-int id = 0;
-bool findPosFlag = false;
-
-bool comp(const Node* a, const Node* b){
-    if(a -> hash > b -> hash || ((a -> hash == b -> hash) && (a -> idx < b -> idx))){
-        return true;
+ 
+int _arrIndex = 0;
+NODE _arrTable[MAX_N];
+ 
+NODE* myAlloc() {
+    return &_arrTable[_arrIndex++];
+}
+ 
+ULL _str2ull(char* name) { // hasing!
+    int i = 0;
+    int count = MAX_KEY;
+    ULL result = 0;
+ 
+    while (name[i] != '\0') {
+        result = result << 5;
+        result = result + (name[i] - 'a' + 1);
+        i++;
+        count--;
     }
-    return false;
-}
-void pushHeap(int p){
-    int current = p;
-    while(current > 0 && comp(HEAP[current], HEAP[(current - 1) / 2])){
-        Node* temp = HEAP[(current - 1) / 2];
-        HEAP[(current - 1) / 2] = HEAP[current];
-        HEAP[current] = temp;
-        current = (current - 1) / 2;
-    }   
-}
-
-void popHeap(){
-    int current = 0;
-    while(current * 2 + 1 < heapsize){
-        int child;
-        if(current * 2 + 2 == heapsize){
-            child = current * 2 + 1;
-        }
-        else{
-            child = comp(HEAP[current * 2 + 1], HEAP[current * 2 + 2]) ? current * 2 + 1 : current * 2 + 2;
-        }
-
-        if(comp(HEAP[current], HEAP[child])){
-            break;
-        }
-        Node* temp = HEAP[current];
-        HEAP[current] = HEAP[child];
-        HEAP[child] = temp;
-        current = child;
-    }
-}
-void findPosition(int cur, int& idx, ull& n_hash){
-    if(cur >= heapsize) return;
-    if(findPosFlag) return;
-    if(HEAP[(cur * 2) + 1] -> idx == idx){
-        HEAP[(cur * 2) + 1] -> hash = n_hash;
-        pushHeap((cur * 2) + 1);
-        findPosFlag = true;
-        return;
-    }
-    else{
-        findPosition((cur * 2) + 1, idx, n_hash);
-    }
-
-    if(HEAP[(cur * 2) + 2] -> idx == idx){
-        HEAP[(cur * 2) + 2] -> hash = n_hash;
-        pushHeap((cur * 2) + 2);
-        findPosFlag = true;
-        return;
-    }
-    else{
-        findPosition((cur * 2) + 2, idx, n_hash);
-    }
-}
-
-
-void clear(){
-    id = 0;
-    heapsize = 0;
-}
-
-void init(){
-    clear();
-}
-
-void push(int idx, char name[]){
-    if(heapsize > MAX_LEN - 1) return;
-    HEAP_POOL[id].hash = getHash(name);
-    HEAP_POOL[id].idx = idx;
-
-    HEAP[heapsize] = &HEAP_POOL[id];
-    pushHeap(heapsize);
-    id++;
-    heapsize++;
-}
-
-int pop(){
-    if(heapsize <= 0) return -1;
-
-    int result = HEAP[0] -> idx;
-    heapsize--;
-    HEAP[0] = HEAP[heapsize];
-    popHeap();
+ 
+    result = result << (count*5);
     return result;
 }
-
-void mod(int idx, char name[]){
-    findPosFlag = false;
-    ull n_hash = getHash(name);
-    findPosition(0, idx, n_hash);
+ 
+int _compare(NODE* a, NODE* b) {
+    if (a->name < b->name) return 1;
+    else if (a->name > b->name) return -1;
+    else {
+        if (a->idx < b->idx) return -1;
+        else return 1;
+    }
+    return 0;
+}
+/////////////////////////////////////////////////////////////////
+ 
+NODE* heap[MAX_N];
+int heapSize = 0;
+int indexTable[MAX_N];
+ 
+void init() {
+    _arrIndex = 0;
+    heapSize = 0;
+}
+ 
+void clear() {
+    init();
+}
+ 
+void _upHeapify(int current) {
+    while (current > 0 && _compare(heap[current], heap[(current - 1) / 2]) == -1)
+    {
+        NODE* temp = heap[(current - 1) / 2];
+        heap[(current - 1) / 2] = heap[current];
+        heap[current] = temp;
+ 
+        indexTable[heap[current]->idx] = current;
+        indexTable[heap[(current - 1) / 2]->idx] = (current - 1) / 2;
+ 
+        current = (current - 1) / 2;
+    }
+}
+ 
+int _downHeapify(int current) {
+    while (current * 2 + 1 < heapSize)
+    {
+        int child;
+        if (current * 2 + 2 == heapSize)
+        {
+            child = current * 2 + 1;
+        }
+        else
+        {
+            child = _compare(heap[current * 2 + 1], heap[current * 2 + 2]) == -1 ? current * 2 + 1 : current * 2 + 2;
+        }
+ 
+        if (_compare(heap[current], heap[child]) == -1)
+        {
+            break;
+        }
+ 
+        NODE* temp = heap[current];
+        heap[current] = heap[child];
+        heap[child] = temp;
+ 
+        indexTable[heap[current]->idx] = current;
+        indexTable[heap[child]->idx] = child;
+ 
+        current = child;
+    }
+    return current;
+}
+ 
+void push(int idx, char name[]) {
+    NODE* node = myAlloc();
+    node->idx = idx;
+    node->name = _str2ull(name);
+ 
+    heap[heapSize] = node;
+    indexTable[heap[heapSize]->idx] = heapSize;
+ 
+    int current = heapSize;
+    _upHeapify(current);
+ 
+    heapSize = heapSize + 1;
+ 
+    return;
+}
+ 
+int pop() {
+    int idx = heap[0]->idx;
+    heapSize = heapSize - 1;
+ 
+    heap[0] = heap[heapSize];
+    indexTable[heap[0]->idx] = 0;
+ 
+    int current = 0;
+    _downHeapify(current);
+    return idx;
+ 
+}
+ 
+void mod(int idx, char name[]) {
+    NODE* node = heap[indexTable[idx]]; 
+ 
+    node->name = _str2ull(name);
+ 
+    int current = indexTable[idx];
+ 
+    current = _downHeapify(current);
+    _upHeapify(current);
 }
