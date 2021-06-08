@@ -1,147 +1,132 @@
-#define ll long long
-#define MAX_LEN 100002
-#define SEMI_LEN 320
-#define NULL 0
-
-typedef struct _Node{
-    ll key = -1;
-    int value = -1;
-    _Node* next = NULL;
-    _Node* prev = NULL;
-}Node;
-
-
-// 메모리 풀
-Node node_pool[MAX_LEN];
-int now_idx(0);
-
-Node* allocatePool(){
-    return &node_pool[now_idx++];
+#define MAX_SIZE    100000
+#define HASH        5381 // 해시를 사용하기 위함
+ 
+struct E {
+    int k;
+    int v;
+    bool del;
+    E* next;
+};
+ 
+E elem[MAX_SIZE];
+int e_idx;
+ 
+E* my_alloc(int k, int v) {
+    E* n_e = &elem[e_idx++];
+    n_e->k = k;
+    n_e->v = v;
+    n_e->del = false;
+    n_e->next = 0; // NULL 값을 대체하기 위해서 0으로 넣는다 .. nullptr 을 대신하기 위함인가봄
+    return n_e;
 }
+ 
 
-// 링크드 리스트 
-Node* head[SEMI_LEN];
-Node* tail[SEMI_LEN];
-int nodePoolLen[SEMI_LEN];
-
-// Top Rank 를 계산하기 위한 자료구조
-int TOP[10] = {0,};
-
-void init(){
-    now_idx = 0;
-    for(register int i = 0; i < 10; i++){
-        TOP[i] = 0;
-    }
-    for(register int i = 0; i < SEMI_LEN; i++){
-        head[i] = allocatePool();
-        tail[i] = allocatePool();
-        head[i] -> next = tail[i];
-        tail[i] -> prev = head[i];
-        nodePoolLen[i] = 0;
-    }
+E* h_table[HASH];
+ 
+void put_elem(E* n) {
+    int h = n->k % HASH;
+    n->next = h_table[h];
+    h_table[h] = n;
 }
-
-void insertNode(int row, Node* new_node){
-    Node* target = head[row] -> next;
-    while(target -> key < new_node -> key && target -> next!= tail[row]){
-        target = target -> next;
+ 
+E* get_elem(int key) {
+    int h = key % HASH;
+    E* e = h_table[h];
+    while (e->k != key) {
+        e = e->next;
     }
-    new_node -> next = target -> next;
-    new_node -> prev = target;
-    target -> next -> prev = new_node;
-    target -> next = new_node;
+    return e;
 }
-void overInsert(int row){
-    Node* target;
-    if(nodePoolLen[row] > SEMI_LEN){
-        target = tail[row] -> prev;
-        tail[row]-> prev = target -> prev;
-        target -> prev -> next = tail[row];
-        row++;
-        insertNode(row, target);
-        nodePoolLen[row]++;
-        overInsert(row);
+ 
+E* heap[MAX_SIZE];
+int heapSize = 0;
+ 
+int heapPush(E* n) {
+    heap[heapSize] = n;
+ 
+    int current = heapSize;
+    while (current > 0 && heap[current]->v > heap[(current - 1) / 2]->v) {
+        E* temp = heap[(current - 1) / 2];
+        heap[(current - 1) / 2] = heap[current];
+        heap[current] = temp;
+        current = (current - 1) / 2;
     }
+ 
+    heapSize = heapSize + 1;
+ 
+    return 1;
 }
-void push(int key, int value){
-    Node* new_node = allocatePool();
-    new_node -> key = key;
-    new_node -> value = value;
-
-    if(now_idx <= 10){
-        TOP[now_idx] = value;
+ 
+E* heapPop() {
+    if (heapSize <= 0) {
+        return 0;
     }
-    else{
-        int min = 10001;
-        int idx = 0;
-        for(register int i = 0; i < 10; i++){
-            if(min > TOP[i]){
-                idx = i;
-                min = TOP[i];
-            }
+ 
+    E* res = heap[0];
+    heapSize = heapSize - 1;
+ 
+    heap[0] = heap[heapSize];
+ 
+    int current = 0;
+    while (current * 2 + 1 < heapSize) {
+        int child;
+        if (current * 2 + 2 == heapSize) {
+            child = current * 2 + 1;
         }
-        TOP[idx] = value;
-    }
-    // 삽입
-    register int i = 0;
-    while(nodePoolLen[i] >= SEMI_LEN && tail[i] -> prev -> key < key){
-        i++;
-    }
-    insertNode(i, new_node);
-    nodePoolLen[i]++;
-    overInsert(i);
-}
-
-
-
-int top(int K){
-  //TODO
-}
-
-void deleteNode(int row, Node* target){
-    target -> prev -> next = target -> next;
-    target -> next -> prev = target -> prev;
-}
-
-void overDelete(int row){
-    if(nodePoolLen[row] < SEMI_LEN && nodePoolLen[row + 1] > 0){
-        Node* target = head[row + 1] -> next;
-        deleteNode(row + 1, target);
-        nodePoolLen[row + 1]--;
-        insertNode(row, target);
-        nodePoolLen[row]++;
-        overDelete(row + 1);
-    }
-}
-
-void erase(int key){
-    for(register int i = 0; i < SEMI_LEN; i++){
-        if(tail[i] -> prev -> key < key) continue;
-
-        Node* target = head[i] -> next;
-        while(target -> key != key){
-            target = target -> next;
+        else {
+            child = heap[current * 2 + 1]->v > heap[current * 2 + 2]->v ? current * 2 + 1 : current * 2 + 2;
         }
-        deleteNode(i, target);
-        nodePoolLen[i]--;
-        overDelete(i);
-        break;
+ 
+        if (heap[current]->v > heap[child]->v) {
+            break;
+        }
+ 
+        E* temp = heap[current];
+        heap[current] = heap[child];
+        heap[child] = temp;
+ 
+        current = child;
+    }
+    return res;
+}
+ 
+void init() {
+    e_idx = heapSize = 0;
+    for (register int i = 0; i < HASH; i++) {
+        h_table[i] = 0;
     }
 }
-
-void modify(int key, int value){
-    register int i;
-    for(i = 0; i < SEMI_LEN;){
-        if(head[i] -> next -> key <= key && tail[i] -> prev -> key >= key) break;
-        i++;
-    }
-    Node* target = head[i] -> next;
-    while(target != tail[i]){
-        if(target -> key != key){
-            target = target -> next;
-            continue;
+ 
+void push(int key, int value) {
+    E* n = my_alloc(key, value);
+    put_elem(n);
+    heapPush(n);
+}
+ 
+int top(int K) {
+    int res = 0;
+    E* temp[10];
+    register E* e;
+    for (int i = 0; i < K; i++) {
+        e = heapPop();
+        while (e->del) {
+            e = heapPop();
         }
-        target -> value = value;
-        return;
+        res += e->v;
+        temp[i] = e;
     }
+    for (int i = 0; i < K; i++) {
+        heapPush(temp[i]);
+    }
+    return res;
+}
+ 
+void erase(int key) {
+    E* e = get_elem(key);
+    e->del = true;
+}
+ 
+void modify(int key, int value) {
+    erase(key);
+    push(key, value);
 }
