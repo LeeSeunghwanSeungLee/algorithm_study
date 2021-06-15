@@ -1,109 +1,137 @@
-#define COUPLE  0
-#define PARENT  1
-#define CHILD   2
-  
-#define MAX_M       200
-#define MAX_HASH    507
-#define ULL   unsigned long long
-#define rint  register int
-  
+#define ALPHABET_SIZE 27 // * == 27
+#define STR_LENGTH 7 // '/0' 포함
+#define STAR_INDEX 26
+
+
+#define CHAR_TO_INDEX(c) (c == '*' ? STAR_INDEX : c - 'a')
+#define INDEX_TO_CHAR(i) (i == 27 ? '*' : i + 'a')
+
 struct NODE {
-    int uid;
-    ULL val;
-    int sex;
-    NODE* couple, *parent;
-    NODE* next;
-}npool[MAX_M], *hash[MAX_HASH];
-int np;
-  
-int dist[MAX_M][MAX_M];
-int count[MAX_M][MAX_M];
-  
-ULL get_val(char* str) {
-    register ULL val = 0;
-    for (rint i = 0; str[i]; ++i)
-        val = (val << 5) + str[i] - 'a' + 1;
-    return val;
-}
-  
-NODE* add_node(char* name, int sex) {
-    register ULL val = get_val(name);
-    npool[np] = { np, val, sex, 0, 0, 0 };
-    register NODE* node = &npool[np++];
-    node->next = hash[val%MAX_HASH];
-    hash[val%MAX_HASH] = node;
-    return node;
-}
-  
-NODE* find_node(char* str) {
-    register ULL val = get_val(str);
-    for (register NODE* p = hash[val%MAX_HASH]; p; p = p->next)
-        if (p->val == val)
-            return p;
-    return 0;
-}
-  
-void update_dist(int uid1, int uid2, int add_dist) {
-    for (rint i = 0; i < np - 1; ++i) {
-        dist[uid2][i] = dist[i][uid2] = dist[uid1][i] + add_dist;
-        count[uid2][dist[uid2][i]]++;
-        count[i][dist[uid2][i]]++;
+    char c;
+    NODE* alphabet[ALPHABET_SIZE];
+    int leafCount;
+};
+
+NODE node[1000000];
+int nodeCount;
+NODE head;
+
+NODE* alloc(char c) // 나랑 동일
+{
+    for (register int i = 0; i < ALPHABET_SIZE; ++i) {
+        node[nodeCount].alphabet[i] = 0;
     }
+    node[nodeCount].leafCount = 0;
+    node[nodeCount].c = c;
+
+    return &node[nodeCount++];
 }
-  
-void init(char initialMemberName[], int initialMemberSex) {
-    np = 0;
-    for (rint i = 0; i < MAX_HASH; ++i)
-        hash[i] = 0;
-    for (rint i = 0; i < MAX_M; ++i)
-        for (rint j = 0; j < MAX_M; ++j)
-            dist[i][j] = count[i][j] = 0;
-  
-    add_node(initialMemberName, initialMemberSex);
-}
-  
-bool addMember(char newMemberName[], int newMemberSex, int relationship, char existingMemberName[]) {
-    register NODE* node = find_node(existingMemberName);
-  
-    if (relationship == COUPLE && (node->couple || node->sex == newMemberSex))
-        return false;
-    if (relationship == PARENT && node->parent &&
-        (node->parent->couple || node->parent->sex == newMemberSex))
-        return false;
-  
-    register NODE* new_node = add_node(newMemberName, newMemberSex);
-    rint uid = node->uid;
-    rint add_dist = 0;
-    if (relationship == COUPLE) {
-        node->couple = new_node;
-        new_node->couple = node;
+
+void init(void)
+{
+    for (register int i = 0; i < ALPHABET_SIZE; ++i) {
+        head.alphabet[i] = 0;
     }
-    else if (relationship == PARENT) {
-        if (node->parent) {
-            node->parent->couple = new_node;
-            new_node->couple = node->parent;
-            uid = node->parent->uid;
+    nodeCount = 0;
+}
+
+void update(NODE* currNode, char str[], int star, int count)
+{
+    if (star) {
+        if (currNode->alphabet[STAR_INDEX] == 0) {
+            currNode->alphabet[STAR_INDEX] = alloc('*');
         }
-        else {
-            node->parent = new_node;
-            add_dist = 1;
+        int i = -1;
+
+        do {
+            i++;
+            update(currNode->alphabet[STAR_INDEX], str + i, 0, count);
+        } while (*(str + i));
+    }
+
+    if (*str == 0) {
+        currNode->leafCount += count;
+        return;
+    }
+
+    int index = CHAR_TO_INDEX(*str);
+
+    if (currNode->alphabet[index] == 0) {
+        currNode->alphabet[index] = alloc(*str);
+    }
+    update(currNode->alphabet[index], str + 1, star, count);
+}
+
+void addWord(char str[])
+{
+    NODE* currNode = &head;
+
+    update(currNode, str, 1, 1); // @params : (노드, 문자, star, count) 
+}
+
+char find_string[STR_LENGTH];
+int str_index;
+
+int remove(NODE* currNode, char str[])
+{
+    int count = 0;
+    find_string[str_index] = 0;
+
+    if (*str >= 'a' && *str <= 'z') {
+        find_string[str_index] = 0;
+        int index = CHAR_TO_INDEX(*str);
+        if (currNode->alphabet[index]) {
+            find_string[str_index++] = *str;
+            count += remove(currNode->alphabet[index], str + 1);
+            str_index--;
         }
     }
-    else {
-        new_node->parent = node;
-        add_dist = 1;
+    else if (*str == 0) {
+        find_string[str_index] = *str;
+        count += currNode->leafCount;
+        update(&head, find_string, 1, -count);
     }
-    update_dist(uid, new_node->uid, add_dist);
-    return true;
+    else if (*str == '*') {
+        count += remove(currNode, str + 1);
+
+        for (register int i = 0; i < 26; ++i) {
+            if (currNode->alphabet[i]) {
+                find_string[str_index++] = INDEX_TO_CHAR(i);
+                count += remove(currNode->alphabet[i], str);
+                str_index--;
+            }
+        }
+    }
+
+    return count;
 }
-  
-int  getDistance(char nameA[], char nameB[]) {
-    register NODE* nodeA = find_node(nameA);
-    register NODE* nodeB = find_node(nameB);
-    return dist[nodeA->uid][nodeB->uid];
+
+int removeWord(char str[])
+{
+    NODE* currNode = &head;
+    str_index = 0;
+
+    return remove(currNode, str);
 }
-  
-int  countMember(char name[], int dist) {
-    register NODE* node = find_node(name);
-    return count[node->uid][dist];
+
+int get(NODE* currNode, char str[])
+{
+    int index = CHAR_TO_INDEX(*str);
+    int count = 0;
+
+    if (*str == 0) {
+        return currNode->leafCount;
+    }
+
+    if (currNode->alphabet[index]) {
+        count += get(currNode->alphabet[index], str + 1);
+    }
+
+    return count;
+}
+
+int searchWord(char str[])
+{
+    NODE* currNode = &head;
+    return get(currNode, str);
 }
