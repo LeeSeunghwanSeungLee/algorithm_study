@@ -1,24 +1,10 @@
-#include <iostream>
-using namespace std;
+ unsigned long hash(char *str)
+    {
+        unsigned long hash = 5381;
+        int c;
 
-#define HASH_SIZE 1000000
-#define PRIME_NUM 23
-#define	PRIME_NUM2 29
+        while (c = *str++)
+            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-
-unsigned int hasing(char* str) { // hasing function for string
-	unsigned key = 0, p = 1;
-	for (int i = 0; str[i]; i++) {
-		key += str[i] * p;
-		p *= PRIME_NUM;
-	}
-	return key % HASH_SIZE;
-}
-
-int main(void) {
-	char str1[] = "Goooood!";
-	int idx = hasing(str1);
-	cout << "STR : " << str1 << endl;
-	cout << "IDX : " << idx << endl;
-	return 0;
-}
+        return hash;
+    }
