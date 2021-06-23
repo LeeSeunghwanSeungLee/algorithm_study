@@ -50,13 +50,12 @@ void remove(int name){
     parent -> child_num--;
 }
 
-int findAnce(int name){
+int findAnce(int name, int ance[]){
     node* curr = &poolNode[name];
     int i=0;
-    while(curr != &poolNode[1]){
-        i++;
+    while(curr -> parent){
+        ance[i++] = curr -> parent -> name;
         curr = curr -> parent;
-        // ance[i++] = curr -> name;
     }
     return i;
 }
