@@ -172,11 +172,11 @@ void insert(int data){
             break;
         }
     }
-    printf("%d", head[0] -> next -> value);
     return;
 }
 
 int remove(int index){
+    index++;
     int row;
     for(int i = 0; i < MAX_SIZE; i++){
         if(len[i] >= index){
@@ -203,6 +203,7 @@ int remove(int index){
     return curr -> value;
 }
 int searchByIndex(int index){
+    index++;
     int row;
     for(int i = 0; i < MAX_SIZE; i++){
         if(len[i] >= index){
