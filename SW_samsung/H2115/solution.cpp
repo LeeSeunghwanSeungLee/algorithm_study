@@ -1,6 +1,6 @@
 #define MAX_LEN 100010
 #define MAX_WORD 25010
-#define MAX_CHAR 500001
+#define MAX_CHAR (25000 * 20)
 
 //////// 기본 제공 함수
 void mstrcpy(char dst[], const char src[]) // str 복사
