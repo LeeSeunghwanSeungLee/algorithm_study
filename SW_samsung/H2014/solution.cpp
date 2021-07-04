@@ -244,6 +244,7 @@ node* removeName(char name[]){
         name++;
     }
     node* aTarget = curr -> end;
+    if(aTarget == 0) return 0;
     curr -> end = 0;
     aTarget -> prev -> next = aTarget -> next;
     if(aTarget -> next != 0){
@@ -300,6 +301,7 @@ node* getTag(char tag[]){
         curr = curr -> next[idx];
         tag++;
     }
+    if(curr -> end == 0|| curr -> end -> next == 0) return 0;
     return curr -> end -> next;
 }
 node* removeTag(char tag[]){
@@ -310,6 +312,7 @@ node* removeTag(char tag[]){
         curr = curr -> next[idx];
         tag++;
     }
+    if(curr -> end == 0 || curr -> end -> next == 0) return 0;
     node* aTarget = curr -> end -> next;
     curr -> end = 0;
     return aTarget;
@@ -406,13 +409,11 @@ int getItem(int r, int c, char name[], char tag[]) {
 
 int getArea(char tag[]) {
     int res = 0;
-    printf("1");
     node* curr = getTag(tag);
-    printf("2");
     while(curr != 0){
         res += (curr -> r_row - curr -> l_row + 1) * (curr -> r_col - curr -> l_col + 1);
         curr = curr -> next;
     }
-    printf("%d", res);
 	return res;
 }
+
