@@ -229,7 +229,7 @@ void deleteName(char mName[MAX_NAME_LEN])
     }
 }
  
-int dupCnt;
+int dupCnt = 0;
 int countBook(int mTypeNum, char mTypes[MAX_N][MAX_TAG_LEN], int mSection)
 {
     int rst = 0;

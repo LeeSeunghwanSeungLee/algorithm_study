@@ -42,7 +42,7 @@ unsigned long typeHash(const char* str){
     return h % MAX_TYPES_TABLE;
 }
 
-int mstrcmp(const char str1[], const chra str2[]){
+int mstrcmp(const char str1[], const char str2[]){
     int c = 0;
     while(str1[c] != '\0' && str1[c] == str2[c]) ++c;
     return str1[c] - str2[c];
@@ -121,10 +121,93 @@ void init(int M){
 }
 
 void mstrcpy(char dest[], const char str[]){
-    while((*dest++ = *src++) != '\0');
+    while((*dest++ = *str++) != '\0');
 }
 #define MAX_N 5
 
 void add(char mName[MAX_NAME_LEN], int mTypeNum, char mTypes[MAX_N][MAX_TAG_LEN], int mSection){
-    
+    int bh = bookAddFind(mName);
+    mstrcpy(bookTable[bh].key, mName);
+    bookTable[bh].section = mSection;
+    bookTable[bh].typeCnt = mTypeNum;
+
+    for(register int i = 0; i < mTypeNum; i++){
+        int th = typeAddFind(mTypes[i]);
+        int tId = typeTable[bh].id;
+        if(tId == -1){
+            tId = typeIdx++;
+            typeTable[th].id = tId;
+            mstrcpy(typeTable[th].key, mTypes[i]);
+        }
+        bookTable[bh].types[i] = tId;
+        bookTable[bh].position[i] = listAdd(head[mSection][tId], bh, myAlloc());
+    }
+}
+
+int moveType(char mTypes[MAX_TAG_LEN], int mFrom, int mTo){
+    int rst = 0;
+    int th = typeAddFind(mTypes);
+    int tId = typeTable[th].id;
+
+    Node* node = head[mFrom][tId] -> next;
+    while(node != tail[mFrom][tId]){
+        int bh = node -> bookHash;
+
+        for(register int i = 0; i < bookTable[bh].typeCnt; i++){
+            listDel(bookTable[bh].position[i]);
+            listAdd(head[mTo][bookTable[bh].types[i]], bh, bookTable[bh].position[i]);
+        }
+        rst++;
+        node = node -> next;
+    }
+    return rst;
+}
+
+void moveName(char mName[MAX_NAME_LEN], int mSection)
+{
+    int bh = bookAddFind(mName);
+ 
+    for (int i = 0; i < bookTable[bh].typeCnt; i++)
+    {
+        listDel(bookTable[bh].position[i]);
+        listAdd(head[mSection][bookTable[bh].types[i]], bh, bookTable[bh].position[i]);
+    }
+    bookTable[bh].section = mSection;
+}
+ 
+void deleteName(char mName[MAX_NAME_LEN])
+{
+    int bh = bookAddFind(mName);
+    for (int i = 0; i < bookTable[bh].typeCnt; i++)
+    {
+        listDel(bookTable[bh].position[i]);
+    }
+}
+
+int dupCnt = 0;
+int countBook(int mTypeNum, char mTypes[MAX_N][MAX_TAG_LEN], int mSection)
+{
+    int rst = 0;
+    dupCnt++;
+ 
+    for (int i = 0; i < mTypeNum; i++)
+    {
+        int th = typeAddFind(mTypes[i]);
+        int tId = typeTable[th].id;
+ 
+        Node* node = head[mSection][tId]->next;
+        while (node!=tail[mSection][tId])
+        {
+            int h = node->bookHash;
+ 
+            if (bookTable[h].dupCheck != dupCnt)
+            {
+                bookTable[h].dupCheck = dupCnt;
+                rst++;
+            }
+ 
+            node = node->next;
+        }
+    }
+    return rst;
 }
