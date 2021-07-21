@@ -50,6 +50,7 @@ void init() {
     root->parent = 0;
     root->file_count = 0;
     root->total_size = 0;
+    root -> is_file = 0;
 }
  
 int cmdAdd(int newID, int pID, int fileSize) {
