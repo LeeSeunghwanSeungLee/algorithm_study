@@ -32,3 +32,4 @@ local.properties
 # personal 
 *.exe
 /memo/
+test.out.dSYM
