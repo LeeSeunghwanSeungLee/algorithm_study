@@ -35,4 +35,4 @@ def solution(priorities, location):
             if curr[0] == location:
                 break;
     return answer
-            
+        
