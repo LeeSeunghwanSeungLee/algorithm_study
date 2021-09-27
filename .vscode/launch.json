@@ -6,6 +6,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch challendge_001",
+            "request": "launch",
+            "mainClass": "challendge_001",
+            "projectName": "bjstudy_5e1ef1b7"
+        },
+        {
+            "type": "java",
+            "name": "Launch challenge_001",
+            "request": "launch",
+            "mainClass": "challenge_001",
+            "projectName": "bjstudy_5e1ef1b7"
+        },
+        {
+            "type": "java",
+            "name": "Launch Solution",
+            "request": "launch",
+            "mainClass": "Solution",
+            "projectName": "bjstudy_5e1ef1b7"
+        },
+        {
+            "type": "java",
             "name": "Launch java_test",
             "request": "launch",
             "mainClass": "java_test",
