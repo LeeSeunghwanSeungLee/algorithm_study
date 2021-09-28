@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch TernaryFlip",
+            "request": "launch",
+            "mainClass": "TernaryFlip",
+            "projectName": "bjstudy_5e1ef1b7"
+        },
+        {
+            "type": "java",
             "name": "Launch challendge_001",
             "request": "launch",
             "mainClass": "challendge_001",
