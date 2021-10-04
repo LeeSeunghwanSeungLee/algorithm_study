@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch DiskController",
+            "request": "launch",
+            "mainClass": "DiskController",
+            "projectName": "bjstudy_5e1ef1b7"
+        },
+        {
+            "type": "java",
             "name": "Launch TernaryFlip",
             "request": "launch",
             "mainClass": "TernaryFlip",
