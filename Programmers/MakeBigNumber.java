@@ -4,10 +4,10 @@ class Solution {
 
         StringBuilder answer = new StringBuilder();
 
-        for (int left = (number.length() - k) - 1; left >= 0; left--) {
+        for (int boundary = k; boundary < number.length(); boundary++) {
             char bigNum = '0';
 
-            for (int i = pos; i < (number.length() - left); i++) {
+            for (int i = pos; i <= boundary; i++) {
                 if (bigNum < number.charAt(i)) {
                     bigNum = number.charAt(i);
                     pos = i + 1;
