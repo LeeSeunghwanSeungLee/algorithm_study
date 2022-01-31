@@ -1,105 +1,57 @@
 import java.util.*;
 
 class Solution {
-    private Node[] tree;
-    private boolean[][] board;
-    private int answer;
+    
+    private ArrayList<Integer>[] list; //간선 정보로 list생성
+    private boolean[] visited;
+    private int[] indegree; //진입 간선
+    private long[] long_a; //연산 수행 위한 long배열
+    private long result; 
+    
     public long solution(int[] a, int[][] edges) {
-        this.tree = new Node[a.length];
-        for (int i = 0; i < a.length; i++)
-            this.tree[i] = new Node(a[i]);
-        this.board = new boolean[a.length][a.length];
-        this.answer = 0;
+        long_a = new long[a.length];
+        list = new ArrayList[a.length];
+        long sum = 0; 
+        for(int i = 0; i < a.length; i++) {
+            sum += a[i];
+            long_a[i] = a[i];
+            list[i] = new ArrayList<>();
+        }
+        if(sum != 0) return -1;
         
-        
-        for (int[] p : edges) {
-            this.board[p[0]][p[1]] = true;
-            this.board[p[1]][p[0]] = true;
+        indegree = new int[a.length];
+        for(int i = 0; i < edges.length; i++) {
+            list[edges[i][0]].add(edges[i][1]);
+            list[edges[i][1]].add(edges[i][0]);
+            indegree[edges[i][0]]++;
+            indegree[edges[i][1]]++;
         }
         
-        connectDFS(0);
-                
-        dfs(this.tree[0]);
-        
-        return (this.tree[0].getCount() == 0) ? this.answer : -1;
+        visited = new boolean[a.length];
+        topology(); //위상정렬 알고리즘 활용하여 리프노드에서 루트까지 가중치 이동횟수 구함
+        return result;
     }
     
-    private void connectDFS(int row) {
-        for (int i = 0; i < this.board.length; i++) {
-            if (this.board[row][i]) {
-                connect(this.tree[row], this.tree[i]);
-                this.board[row][i] = false;
-                this.board[i][row] = false;
-                connectDFS(i);
+    public void topology() {
+        Queue<Integer> q = new LinkedList<>();
+        for(int i = 0; i < indegree.length; i++) {
+            if(indegree[i] == 1) q.offer(i);
+        } 
+        
+        while(!q.isEmpty()) {
+            int current = q.poll();
+            visited[current] = true;
+            
+            for(int i = 0; i < list[current].size(); i++) {
+                int next = list[current].get(i);
+                if(!visited[next]) {
+                    indegree[next]--;
+                    long_a[next] += long_a[current];// +1, -1해주었다고 생각하여 합친 값을 저장    
+                    result += Math.abs(long_a[current]); // 현재 노드에서 이동한 값 만큼 result에 더해줌 
+                    long_a[current] = 0; // 현재 노드의 모든 가중치 값을 부모로 이동.
+                    if(indegree[next] == 1) q.offer(next); 
+                }
             }
         }
-    }
-    
-    private void connect(Node p, Node c) {
-        p.setChildren(c);
-        c.setParent(p);
-    }
-    
-    private void dfs(Node nowNode) {
-        // base case
-        if (nowNode.getchildrenNum() > 0) {
-            for (int i = 0; i < nowNode.getchildrenNum(); i++)
-                dfs(nowNode.getChildren(i));
-        }
-        
-        if (nowNode.getParent() == null) return;
-                        
-        this.answer += Math.abs(nowNode.getCount());
-        
-        nowNode.getParent().changeCount(nowNode.getCount());
-        
-        nowNode.changeCount(nowNode.getCount() * -1);
-    }
-}
-
-class Node {
-    private int count;
-    private Node parentNode;
-    private int childrenNum;
-    private List<Node> childrenNode;
-    
-    public Node(int count) {
-        this.count = count;
-        this.childrenNode = new LinkedList<>();
-        this.childrenNum = 0;
-    }
-
-    
-    public int getCount() {
-        return this.count;
-    }
-    
-    public void setCount(int cnt) {
-        this.count = cnt;
-    }
-    
-    public void changeCount(int num) {
-        this.count += num;
-    }
-    
-    public Node getParent() {
-        return this.parentNode;
-    }
-    
-    public void setParent(Node p) {
-        this.parentNode = p;
-    }
-    
-    public int getchildrenNum() {
-        return this.childrenNum;
-    }
-    
-    public Node getChildren(int idx) {
-        return this.childrenNode.get(idx);
-    }
-    
-    public void setChildren(Node c) {
-        this.childrenNum++;
-        this.childrenNode.add(c);
     }
 }
