@@ -30,11 +30,11 @@ class Solution{
     
     return b.get((index - interval) / (index + 1));
 }
-0 1 2  3  4 5 6  7  8 9 10 11 12 13  
-0 1 2 [0] 3 4 5 [1] 6 7 8 [2] 9 10
-  i, i + interval + 1, 
-  a_n = iterval + (interval + 1)* (n - 1);
+// 0 1 2  3  4 5 6  7  8 9 10 11 12 13  
+// 0 1 2 [0] 3 4 5 [1] 6 7 8 [2] 9 10
+//   i, i + interval + 1, 
+//   a_n = iterval + (interval + 1)* (n - 1);
   
-  b가 나온 횟수 : (index + 1) / (interval + 1)
+//   b가 나온 횟수 : (index + 1) / (interval + 1)
     
   
