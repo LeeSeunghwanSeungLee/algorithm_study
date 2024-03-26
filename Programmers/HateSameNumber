@@ -1,0 +1,32 @@
+public int[] solution(int[] arr) {
+		MemoizationValue memoization = new MemoizationValue(-1);
+		List<Integer> result = new ArrayList<>();
+
+		Arrays.stream(arr)
+			.filter(n -> !memoization.equals(n))
+			.forEach(n -> {
+				memoization.update(n);
+				result.add(n);
+			});
+
+		return result.stream()
+			.mapToInt(Integer::intValue)
+			.toArray();
+	}
+
+	static class MemoizationValue {
+		private int num;
+
+		MemoizationValue(int num) {
+			this.num = num;
+		}
+
+		void update(int num) {
+			this.num = num;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return num == (int) obj;
+		}
+	}
